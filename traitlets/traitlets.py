@@ -187,13 +187,13 @@ def parse_notifier_name(names):
     Examples
     --------
     >>> parse_notifier_name([])
-    [All]
+    [traitlets.All]
     >>> parse_notifier_name("a")
     ['a']
     >>> parse_notifier_name(["a", "b"])
     ['a', 'b']
     >>> parse_notifier_name(All)
-    [All]
+    [traitlets.All]
     """
     if names is All or isinstance(names, str):
         return [names]
@@ -258,8 +258,17 @@ class link(object):
 
     Examples
     --------
+    >>> class X(HasTraits):
+    ...     value = Int()
+
+    >>> src = X(value=1)
+    >>> tgt = X(value=42)
     >>> c = link((src, "value"), (tgt, "value"))
-    >>> src.value = 5  # updates other objects as well
+
+    Setting source updates target objects:
+    >>> src.value = 5
+    >>> tgt.value
+    5
     """
     updating = False
 
@@ -326,9 +335,23 @@ class directional_link(object):
 
     Examples
     --------
+    >>> class X(HasTraits):
+    ...     value = Int()
+
+    >>> src = X(value=1)
+    >>> tgt = X(value=42)
     >>> c = directional_link((src, "value"), (tgt, "value"))
-    >>> src.value = 5  # updates target objects
-    >>> tgt.value = 6  # does not update source object
+
+    Setting source updates target objects:
+    >>> src.value = 5
+    >>> tgt.value
+    5
+
+    Setting target does not update source object:
+    >>> tgt.value = 6
+    >>> src.value
+    5
+
     """
     updating = False
 
@@ -720,7 +743,11 @@ class TraitType(BaseDescriptor):
 
         This allows convenient metadata tagging when initializing the trait, such as:
 
+        Examples
+        --------
         >>> Int(0).tag(config=True, sync=True)
+        <traitlets.traitlets.Int object at ...>
+
         """
         maybe_constructor_keywords = set(metadata.keys()).intersection({'help','allow_none', 'read_only', 'default_value'})
         if maybe_constructor_keywords:
@@ -2874,16 +2901,17 @@ class Dict(Instance):
 
         Examples
         --------
-        >>> d = Dict(Unicode())
         a dict whose values must be text
+        >>> d = Dict(Unicode())
 
-        >>> d2 = Dict(per_key_traits={"n": Integer(), "s": Unicode()})
         d2['n'] must be an integer
         d2['s'] must be text
+        >>> d2 = Dict(per_key_traits={"n": Integer(), "s": Unicode()})
 
-        >>> d3 = Dict(value_trait=Integer(), key_trait=Unicode())
         d3's keys must be text
         d3's values must be integers
+        >>> d3 = Dict(value_trait=Integer(), key_trait=Unicode())
+
         """
 
         # handle deprecated keywords
